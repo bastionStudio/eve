@@ -1,0 +1,6 @@
+<svg width="255" height="355" viewBox="0 0 255 355" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect y="254" width="255" height="51" fill="white"/>
+<rect y="305" width="205" height="51" transform="rotate(-90 0 305)" fill="white"/>
+<rect x="204" y="305" width="255" height="51" transform="rotate(-90 204 305)" fill="white"/>
+<rect x="102" y="355" width="355" height="51" transform="rotate(-90 102 355)" fill="white"/>
+</svg>

@@ -2,110 +2,158 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="https://ik.imagekit.io/hdmieq6o7/eve%20(3).ico" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <!-- Favicon is managed globally to ensure consistency across pages -->
+    <script src="global/setFavicon.js" defer></script>
+    <link rel="preload" href="global/globalStyles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="global/globalStyles.css"></noscript>
     <title>bootloader</title>
     <style>
-        :root {
-            --bg: #000;
-            --fg: #f0f0f0;
-            --dim: #666;
-            --accent: #00ff00;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: pan-x pan-y;
         }
 
-        * {
-            text-rendering: optimizeLegibility;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            font-kerning: normal;
-            font-feature-settings: "kern", "liga", "clig", "calt";
-            box-sizing: border-box;
+        html {
+            touch-action: pan-x pan-y;
+            -webkit-text-size-adjust: none;
+            text-size-adjust: none;
+            overscroll-behavior: none;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
         }
 
         body {
-            background: var(--bg);
-            color: var(--fg);
-            font-family: "SF Mono", "Fira Code", "JetBrains Mono", "Ubuntu Mono", "Courier New", monospace;
-            padding: 50px;
-            margin: 0;
-            text-transform: uppercase;
+            background: #000000;
+            color: #00ff41;
+            font-family: "SF Mono", "Courier New", monospace;
             font-size: 13px;
+            padding: 60px;
             line-height: 1.8;
-            letter-spacing: 0.1em;
+            width: 100%;
+            height: 100%;
             overflow: hidden;
-            
-            /* High-end rendering hints */
-            image-rendering: -webkit-optimize-contrast;
-            shape-rendering: geometricPrecision;
         }
 
         #out {
-            /* Subtle glow for depth */
-            text-shadow: 0 0 1px rgba(255, 255, 255, 0.1);
+            max-width: 600px;
         }
 
         .line {
-            display: flex;
-            gap: 15px;
             opacity: 0;
-            animation: fadeIn 0.3s forwards ease-out;
+            animation: show 0.2s forwards;
+            letter-spacing: 0.5px;
         }
 
-        .label { color: var(--dim); min-width: 40px; }
-        .val { color: var(--fg); font-weight: 500; }
-
-        .booting { 
-            margin-top: 30px; 
-            color: var(--accent); 
-            font-weight: bold;
-            letter-spacing: 0.3em;
-            animation: pulse 2s infinite;
+        @keyframes show {
+            from { 
+                opacity: 0; 
+                transform: translateX(-4px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(2px); }
-            to { opacity: 1; transform: translateY(0); }
+        .status {
+            margin-top: 30px;
+            font-weight: 500;
         }
 
-        @keyframes pulse {
-            0% { opacity: 0.7; }
-            50% { opacity: 1; }
-            100% { opacity: 0.7; }
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 14px;
+            background: #00ff41;
+            margin-left: 4px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
         }
     </style>
 </head>
 <body>
     <div id="out"></div>
+
+    <!-- Performance UI (optional) -->
+    <div id="perf-root" style="display:none;">
+        <!-- canvas is injected by perf renderer -->
+        <div class="perf-controls">
+            <button id="perf-toggle" class="perf-toggle">Enable High-Perf Mode</button>
+            <div id="perf-fps">-- FPS</div>
+        </div>
+    </div>
+    <link rel="stylesheet" href="perf/perf.css">
+    <script src="perf/renderer.js" defer></script>
     <script>
+        document.addEventListener('DOMContentLoaded', ()=> {
+            const btn = document.getElementById('perf-toggle');
+            const root = document.getElementById('perf-root');
+            let running = false;
+            btn.addEventListener('click', ()=> {
+                if(!running){ root.style.display = 'block'; Perf.start(); btn.textContent = 'Disable High-Perf Mode'; running = true; }
+                else{ Perf.stop(); root.style.display = 'none'; btn.textContent = 'Enable High-Perf Mode'; running = false; }
+            });
+        });
+    </script>
+
+    <script>
+        const opts = { passive: false, capture: true };
+        const prevent = e => { e.preventDefault(); e.stopPropagation(); };
+        
+        let lastTouch = 0;
+        document.addEventListener('touchend', e => {
+            const now = Date.now();
+            if (now - lastTouch <= 300) prevent(e);
+            lastTouch = now;
+        }, opts);
+
+        document.addEventListener('touchstart', e => { if (e.touches.length > 1) prevent(e); }, opts);
+        document.addEventListener('touchmove', e => { if (e.touches.length > 1) prevent(e); }, opts);
+        ['gesturestart', 'gesturechange', 'gestureend'].forEach(ev => document.addEventListener(ev, prevent, opts));
+        document.addEventListener('wheel', e => { if (e.ctrlKey || e.metaKey) prevent(e); }, opts);
+        document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && ['+', '-', '=', '0'].includes(e.key)) prevent(e); }, opts);
+
         const out = document.getElementById('out');
         const info = [
-            ["OS", navigator.platform],
-            ["CPU", (navigator.hardwareConcurrency || "?") + " CORES"],
-            ["RAM", (navigator.deviceMemory || "?") + " GB"],
-            ["RES", `${screen.width}X${screen.height}`],
-            ["NET", navigator.onLine ? "ONLINE" : "OFFLINE"]
+            `OS      ${navigator.platform}`,
+            `CPU     ${navigator.hardwareConcurrency || '?'} cores`,
+            `RAM     ${navigator.deviceMemory || '?'} GB`,
+            `DISPLAY ${screen.width}x${screen.height}`,
+            `NET     ${navigator.onLine ? 'online' : 'offline'}`
         ];
 
-        async function boot() {
-            for (const [k, v] of info) {
+        const random = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+
+        (async () => {
+            for (const text of info) {
                 const line = document.createElement('div');
                 line.className = 'line';
-                line.innerHTML = `<span class="label">${k}</span><span class="val">${v}</span>`;
+                line.textContent = text;
                 out.appendChild(line);
-                await new Promise(r => setTimeout(r, 80));
+                await wait(random(50, 150));
             }
             
-            const b = document.createElement('div');
-            b.className = 'booting';
-            b.innerHTML = 'BOOTING EVE OS...';
-            out.appendChild(b);
+            await wait(300);
+            
+            const status = document.createElement('div');
+            status.className = 'line status';
+            status.innerHTML = 'Initializing PocketOS...<span class="cursor"></span>';
+            out.appendChild(status);
 
-            setTimeout(() => {
-                b.innerHTML += ' [OK]';
-            }, 600);
-        }
-
-        boot();
+            await wait(random(2000, 5000));
+            status.innerHTML = 'Booting Eve...<span class="cursor"></span>';
+        })();
     </script>
 </body>
 </html>
