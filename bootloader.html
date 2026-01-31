@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="https://ik.imagekit.io/hdmieq6o7/eve%20(3).ico" type="image/x-icon">
+    <title>bootloader</title>
+    <style>
+        :root {
+            --bg: #000;
+            --fg: #f0f0f0;
+            --dim: #666;
+            --accent: #00ff00;
+        }
+
+        * {
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            font-kerning: normal;
+            font-feature-settings: "kern", "liga", "clig", "calt";
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--fg);
+            font-family: "SF Mono", "Fira Code", "JetBrains Mono", "Ubuntu Mono", "Courier New", monospace;
+            padding: 50px;
+            margin: 0;
+            text-transform: uppercase;
+            font-size: 13px;
+            line-height: 1.8;
+            letter-spacing: 0.1em;
+            overflow: hidden;
+            
+            /* High-end rendering hints */
+            image-rendering: -webkit-optimize-contrast;
+            shape-rendering: geometricPrecision;
+        }
+
+        #out {
+            /* Subtle glow for depth */
+            text-shadow: 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .line {
+            display: flex;
+            gap: 15px;
+            opacity: 0;
+            animation: fadeIn 0.3s forwards ease-out;
+        }
+
+        .label { color: var(--dim); min-width: 40px; }
+        .val { color: var(--fg); font-weight: 500; }
+
+        .booting { 
+            margin-top: 30px; 
+            color: var(--accent); 
+            font-weight: bold;
+            letter-spacing: 0.3em;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(2px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body>
+    <div id="out"></div>
+    <script>
+        const out = document.getElementById('out');
+        const info = [
+            ["OS", navigator.platform],
+            ["CPU", (navigator.hardwareConcurrency || "?") + " CORES"],
+            ["RAM", (navigator.deviceMemory || "?") + " GB"],
+            ["RES", `${screen.width}X${screen.height}`],
+            ["NET", navigator.onLine ? "ONLINE" : "OFFLINE"]
+        ];
+
+        async function boot() {
+            for (const [k, v] of info) {
+                const line = document.createElement('div');
+                line.className = 'line';
+                line.innerHTML = `<span class="label">${k}</span><span class="val">${v}</span>`;
+                out.appendChild(line);
+                await new Promise(r => setTimeout(r, 80));
+            }
+            
+            const b = document.createElement('div');
+            b.className = 'booting';
+            b.innerHTML = 'BOOTING EVE OS...';
+            out.appendChild(b);
+
+            setTimeout(() => {
+                b.innerHTML += ' [OK]';
+            }, 600);
+        }
+
+        boot();
+    </script>
+</body>
+</html>
