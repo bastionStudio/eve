@@ -101,20 +101,26 @@ html {
     context-menu: none;
 }
 
+/* Selection: subtle theme-aware default. Pages can override by setting --selection-bg */
+:root {
+    --selection-bg: rgba(0, 122, 204, 0.12);
+    --focus-ring: rgba(0, 122, 204, 0.9);
+    --focus-ring-width: 3px;
+    --focus-ring-offset: 2px;
+}
 ::selection {
-    /* transparent selection by default; no !important so you can override */
-    background: transparent;
+    background: var(--selection-bg);
     color: inherit;
 }
 
 ::-moz-selection {
-    background: transparent;
+    background: var(--selection-bg);
     color: inherit;
 }
 
 ::before::selection,
 ::after::selection {
-    background: transparent;
+    background: var(--selection-bg);
     color: inherit;
 } 
 
@@ -324,14 +330,17 @@ html {
     user-select: text;
 }
 .allow-selection ::selection, .allow-select ::selection {
-    background: rgba(0, 0, 0, 0.12);
+    background: var(--selection-bg);
     color: inherit;
 }
 
-/* Accessibility: visible focus for keyboard users */
+/* Accessibility: visible focus for keyboard users
+   Use a neutral, theme-aware focus ring (override via --focus-ring)
+*/
 :focus-visible {
-    outline: 3px solid Highlight;
-    outline-offset: 2px;
+    outline: none;
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
 }
 
 /* Screen-reader only */

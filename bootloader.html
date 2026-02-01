@@ -1,159 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, shrink-to-fit=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <!-- Favicon is managed globally to ensure consistency across pages -->
-    <script src="global/setFavicon.js" defer></script>
-    <link rel="preload" href="global/globalStyles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="global/globalStyles.css"></noscript>
-    <title>bootloader</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            touch-action: pan-x pan-y;
-        }
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="">
 
-        html {
-            touch-action: pan-x pan-y;
-            -webkit-text-size-adjust: none;
-            text-size-adjust: none;
-            overscroll-behavior: none;
-            overflow: hidden;
-            position: fixed;
-            width: 100%;
-            height: 100%;
-        }
+    <!-- Favicon -->
+    <script src="pocket/setFavicon.js" defer></script>
 
-        body {
-            background: #000000;
-            color: #00ff41;
-            font-family: "SF Mono", "Courier New", monospace;
-            font-size: 13px;
-            padding: 60px;
-            line-height: 1.8;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
+    <!-- Metadata -->
+    <script id="page-metadata" type="application/json">
+    {"title":"Main","description":"None"}
+    </script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="global/setGlobalStyles.css">
 
-        #out {
-            max-width: 600px;
-        }
+    <!-- Scripts -->
+    <script src="pocket/pocketKernel.js"></script>
+    <script src="pocket/pageMetadata.js"></script>
 
-        .line {
-            opacity: 0;
-            animation: show 0.2s forwards;
-            letter-spacing: 0.5px;
-        }
-
-        @keyframes show {
-            from { 
-                opacity: 0; 
-                transform: translateX(-4px);
-            }
-            to { 
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .status {
-            margin-top: 30px;
-            font-weight: 500;
-        }
-
-        .cursor {
-            display: inline-block;
-            width: 8px;
-            height: 14px;
-            background: #00ff41;
-            margin-left: 4px;
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
-        }
-    </style>
 </head>
-<body>
-    <div id="out"></div>
 
-    <!-- Performance UI (optional) -->
-    <div id="perf-root" style="display:none;">
-        <!-- canvas is injected by perf renderer -->
-        <div class="perf-controls">
-            <button id="perf-toggle" class="perf-toggle">Enable High-Perf Mode</button>
-            <div id="perf-fps">-- FPS</div>
-        </div>
-    </div>
-    <link rel="stylesheet" href="perf/perf.css">
-    <script src="perf/renderer.js" defer></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', ()=> {
-            const btn = document.getElementById('perf-toggle');
-            const root = document.getElementById('perf-root');
-            let running = false;
-            btn.addEventListener('click', ()=> {
-                if(!running){ root.style.display = 'block'; Perf.start(); btn.textContent = 'Disable High-Perf Mode'; running = true; }
-                else{ Perf.stop(); root.style.display = 'none'; btn.textContent = 'Enable High-Perf Mode'; running = false; }
-            });
-        });
-    </script>
+<body>  
 
-    <script>
-        const opts = { passive: false, capture: true };
-        const prevent = e => { e.preventDefault(); e.stopPropagation(); };
-        
-        let lastTouch = 0;
-        document.addEventListener('touchend', e => {
-            const now = Date.now();
-            if (now - lastTouch <= 300) prevent(e);
-            lastTouch = now;
-        }, opts);
 
-        document.addEventListener('touchstart', e => { if (e.touches.length > 1) prevent(e); }, opts);
-        document.addEventListener('touchmove', e => { if (e.touches.length > 1) prevent(e); }, opts);
-        ['gesturestart', 'gesturechange', 'gestureend'].forEach(ev => document.addEventListener(ev, prevent, opts));
-        document.addEventListener('wheel', e => { if (e.ctrlKey || e.metaKey) prevent(e); }, opts);
-        document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && ['+', '-', '=', '0'].includes(e.key)) prevent(e); }, opts);
 
-        const out = document.getElementById('out');
-        const info = [
-            `OS      ${navigator.platform}`,
-            `CPU     ${navigator.hardwareConcurrency || '?'} cores`,
-            `RAM     ${navigator.deviceMemory || '?'} GB`,
-            `DISPLAY ${screen.width}x${screen.height}`,
-            `NET     ${navigator.onLine ? 'online' : 'offline'}`
-        ];
-
-        const random = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-        const wait = ms => new Promise(r => setTimeout(r, ms));
-
-        (async () => {
-            for (const text of info) {
-                const line = document.createElement('div');
-                line.className = 'line';
-                line.textContent = text;
-                out.appendChild(line);
-                await wait(random(50, 150));
-            }
-            
-            await wait(300);
-            
-            const status = document.createElement('div');
-            status.className = 'line status';
-            status.innerHTML = 'Initializing PocketOS...<span class="cursor"></span>';
-            out.appendChild(status);
-
-            await wait(random(2000, 5000));
-            status.innerHTML = 'Booting Eve...<span class="cursor"></span>';
-        })();
-    </script>
 </body>
+
 </html>

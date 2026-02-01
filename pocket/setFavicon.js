@@ -1,13 +1,6 @@
 (function(){
   'use strict';
-
-  // Simple global favicon manager
-  // Usage:
-  //  - Configure `GlobalFavicon.pages` with entries { match: <string|RegExp|'*'>, favicon: '<url>' }
-  //  - Call `GlobalFavicon.set(faviconUrl)` to override for current page
-  //  - Call `GlobalFavicon.apply()` to (re)apply rules
-
-  const DEFAULT_ICON = '/assets/svg/eve.svg'; // absolute preferred to work from any path
+  const DEFAULT_ICON = '../assets/eveIcons/eve.svg'; // use relative paths so file:// and zip usage works
   const MASK_COLOR = '#00ff41';
 
   const pages = [
@@ -48,8 +41,8 @@
     let alt = document.querySelector('link[rel="alternate icon"]') || document.querySelector('link[rel="shortcut icon"]');
     if(!alt){ alt = document.createElement('link'); alt.rel = 'alternate icon'; document.head.appendChild(alt); }
     alt.type = 'image/x-icon';
-    // keep an .ico fallback at /assets/ico/eve.ico if it exists
-    alt.href = resolveUrl('/assets/ico/eve.ico');
+    // keep an .ico fallback at assets/ico/eve.ico if it exists (relative helps ZIP/file://)
+    alt.href = resolveUrl('assets/ico/eve.ico');
 
     // force browser to re-request favicon (very small trick)
     // by appending a short cache-buster when debugging (only if param provided)
